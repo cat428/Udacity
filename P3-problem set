@@ -75,20 +75,20 @@ def process_file(f):
         soup = BeautifulSoup(html, "lxml")
         index=["year", "month", "flights", "flights", "total"]
         flight=[0,0,"domestic", "international",0]
-        info = {"courier":a["courier"], "airport":a["airport"], "year":None, "month":None, "flights": {"domestic":None, "international":None}, "total":None}
         for dataTR in soup.find_all('tr', class_='dataTDRight'):
+            info = {"courier":a["courier"], "airport":a["airport"], "year":None, "month":None, "flights": {"domestic":None, "international":None}, "total":None}
             i=0
             for dataTRs in dataTR.find_all('td'):
                 if i==2 or i==3:
-                    info[index[i]][flight[i]]=dataTRs.string
+                    info[index[i]][flight[i]]=int(dataTRs.string.replace(',', ''))
                 else:
-                    info[index[i]]=dataTRs.string
+                    if dataTRs.string.replace(',', '').isdigit():
+                        info[index[i]]=int(dataTRs.string.replace(',', ''))
+                    else:
+                        info[index[i]]=dataTRs.string
                 i=i+1
-            print info
             data.append(info)
-            print data
-
-        datas = [d for d in data if d.get('month') != 'total']
+        data = [d for d in data if d['month'] != 'TOTAL']
     return data
 
 
@@ -102,6 +102,7 @@ def test():
         data += process_file(f)
         
     assert len(data) == 399  # Total number of rows
+    print data[-1]["flights"] 
     for entry in data[:3]:
         assert type(entry["year"]) == int
         assert type(entry["month"]) == int
